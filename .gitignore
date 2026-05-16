@@ -38,3 +38,9 @@ thoughts_export.md
 
 # pyinstaller
 *.spec
+
+# Temporary files
+temp.md
+promotion_copy.md
+publish.ps1
+PUBLISH_GUIDE.md
