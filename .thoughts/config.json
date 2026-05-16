@@ -1,0 +1,7 @@
+{
+  "top_k": 8,
+  "similarity_threshold": 0.85,
+  "chunk_size": 500,
+  "max_context_tokens": 2000,
+  "embedding_model": "all-MiniLM-L6-v2"
+}
