@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project runtime data
+.thoughts/
+thoughts_export.md
+
+# Avoid tracking large files (paper PDF excluded intentionally)
+*.pdf
+!paper/*.pdf
+# But don't track the root-level copy
+/2604.12231v1.pdf
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# pyinstaller
+*.spec
