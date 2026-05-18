@@ -11,7 +11,18 @@ Thought-Retriever 包初始化模块
 
 from .thought_memory import ThoughtMemory
 from .config import ThoughtConfig
-from .thought_store import Thought
+from .thought_store import Thought, ThoughtStore
+from .embedding import EmbeddingEngine
+from .utils import generate_id, timestamp_now, chunk_text
 
-__all__ = ["ThoughtMemory", "ThoughtConfig", "Thought"]
-__version__ = "1.0.0"
+__all__ = [
+    "ThoughtMemory",
+    "ThoughtConfig",
+    "Thought",
+    "ThoughtStore",
+    "EmbeddingEngine",
+    "generate_id",
+    "timestamp_now",
+    "chunk_text",
+]
+__version__ = "2.0.0"

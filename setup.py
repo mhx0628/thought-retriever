@@ -12,7 +12,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="thought-retriever",
-    version="1.0.0",
+    version="2.0.0",
     description="Self-evolving long-term memory for LLM agents via thought retrieval",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -34,11 +34,16 @@ setup(
     ],
     install_requires=[
         "numpy>=1.21.0",
+        "jieba>=0.42.1",
     ],
     extras_require={
         "full": [
             "sentence-transformers>=2.2.0",
             "scikit-learn>=1.0.0",
+            "jieba>=0.42.1",
+        ],
+        "chinese": [
+            "jieba>=0.42.1",
         ],
         "dev": [
             "pytest>=7.0.0",

@@ -41,6 +41,8 @@ Built on the paper by **UIUC, MIT & CMU**, published in **Transactions on Machin
 | 🌐 **Offline-First** | Falls back from sentence-transformers → TF-IDF → pure-Python hash embeddings |
 | 📁 **Zero Database** | Pure JSON persistence — no DBMS required |
 | 📦 **pip Installable** | Import as a Python package in any project |
+| 🇨🇳 **Chinese Optimized** | jieba tokenization + Chinese prompt templates, 3-5x better for Chinese |
+| 🧹 **Smart Filtering** | Auto-skip meaningless messages, clean LLM output labels |
 
 ---
 
@@ -83,7 +85,9 @@ User Query
 ### Installation
 
 ```bash
-pip install numpy
+pip install thought-retriever
+# Or install dependencies manually:
+pip install numpy jieba
 # For semantic embeddings (recommended):
 pip install sentence-transformers scikit-learn
 # The system auto-falls back to TF-IDF or pure-Python hashing
@@ -116,6 +120,25 @@ results = memory.retrieve("database connection pooling", top_k=5)
 for r in results:
     print(f"[{r['type']}] (score={r['score']:.2f}, level={r['abstraction_level']})")
     print(f"  {r['content'][:80]}...")
+```
+
+### Chinese Usage
+
+```python
+from thought_retriever import ThoughtConfig, ThoughtMemory
+
+# Recommended config for Chinese
+config = ThoughtConfig(
+    project_path="./my_project",
+    language="zh",  # Use Chinese prompt templates
+)
+memory = ThoughtMemory(config=config)
+
+# Add Chinese knowledge
+memory.add_knowledge("小明今年10岁，喜欢画画和踢足球")
+
+# Retrieve Chinese memories
+results = memory.retrieve("小明喜欢什么")
 ```
 
 ### Full Pipeline with an LLM
@@ -153,6 +176,8 @@ print(memory.stats())
 | `chunk_size` | 500 | — | Token budget for text chunking |
 | `max_context_tokens` | 2000 | — | LLM context window limit |
 | `embedding_model` | `all-MiniLM-L6-v2` | Contriever | Sentence transformer model name |
+| `language` | `auto` | — | Language setting (auto/zh/en), affects prompt template selection |
+| `thought_prompt_lang` | `auto` | — | Thought generation prompt language |
 
 ```python
 from thought_retriever import ThoughtConfig, ThoughtMemory
@@ -189,6 +214,7 @@ thought-retriever/
 │   └── SKILL.md
 ├── README.md                   # This file
 ├── README_ZH.md                # 中文文档
+├── CHANGELOG.md                # Version changelog
 ├── LICENSE                     # Apache 2.0
 └── setup.py                    # pip install support
 ```

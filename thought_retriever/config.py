@@ -36,6 +36,8 @@ class ThoughtConfig:
     max_context_tokens: int = 2000
     embedding_model: str = "all-MiniLM-L6-v2"
     thoughts_dir_name: str = ".thoughts"
+    language: str = "auto"
+    thought_prompt_lang: str = "auto"
 
     @property
     def thoughts_dir(self) -> Path:
@@ -63,18 +65,18 @@ class ThoughtConfig:
         return self.thoughts_dir / "config.json"
 
     def to_dict(self) -> dict:
-        """将配置序列化为字典"""
         return {
             "top_k": self.top_k,
             "similarity_threshold": self.similarity_threshold,
             "chunk_size": self.chunk_size,
             "max_context_tokens": self.max_context_tokens,
             "embedding_model": self.embedding_model,
+            "language": self.language,
+            "thought_prompt_lang": self.thought_prompt_lang,
         }
 
     @classmethod
     def from_dict(cls, data: dict, project_path: str = ".") -> "ThoughtConfig":
-        """从字典创建配置对象"""
         return cls(
             project_path=project_path,
             top_k=data.get("top_k", 8),
@@ -82,4 +84,6 @@ class ThoughtConfig:
             chunk_size=data.get("chunk_size", 500),
             max_context_tokens=data.get("max_context_tokens", 2000),
             embedding_model=data.get("embedding_model", "all-MiniLM-L6-v2"),
+            language=data.get("language", "auto"),
+            thought_prompt_lang=data.get("thought_prompt_lang", "auto"),
         )

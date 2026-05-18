@@ -117,6 +117,7 @@ class ThoughtMemory:
         generate_thought_fn: Optional[Callable[[str], str]] = None,
         top_k: Optional[int] = None,
         metadata: Optional[Dict] = None,
+        lang: Optional[str] = None,
     ) -> Tuple[str, List[Thought]]:
         """
         处理用户查询，执行完整的五步流水线
@@ -141,6 +142,9 @@ class ThoughtMemory:
         if generate_thought_fn is None:
             generate_thought_fn = generate_answer_fn
 
+        if lang is None:
+            lang = self.config.thought_prompt_lang
+
         # === Step 1: Thought Retrieval (思想检索) ===
         # 对应论文: Ti ← R(Qi, K ∪ T)
         retrieved_results, context = self.retriever.retrieve_with_context(query, top_k)
@@ -148,13 +152,13 @@ class ThoughtMemory:
         # === Step 2: Answer Generation (答案生成) ===
         # 对应论文: Ai ← L(Qi, Ti)
         from .templates.prompts import answer_generation_prompt
-        prompt = answer_generation_prompt(query, context)
+        prompt = answer_generation_prompt(query, context, lang=lang)
         answer = generate_answer_fn(prompt)
 
         # === Step 3: Thought & Confidence Generation (思想与置信度生成) ===
         # 对应论文: Ti, ci ← L(Qi, Ai)
         from .templates.prompts import thought_confidence_prompt
-        thought_prompt = thought_confidence_prompt(query, answer)
+        thought_prompt = thought_confidence_prompt(query, answer, lang=lang)
         thought_response = generate_thought_fn(thought_prompt).strip()
 
         # 解析LLM返回的思想和置信度
@@ -263,46 +267,30 @@ class ThoughtMemory:
         return self.retriever.retrieve(query, top_k, include_metadata)
 
     def _parse_thought_response(self, response: str) -> Tuple[str, int]:
-        """
-        解析LLM返回的思想和置信度响应
-
-        期望格式:
-            1
-            [思想内容]
-
-        或:
-            0
-
-        Args:
-            response: LLM原始响应文本
-
-        Returns:
-            (thought_content, confidence):
-                thought_content: 思想内容（若ci=0则为空字符串）
-                confidence: 置信度 (0或1)
-        """
         response = response.strip()
 
         if not response:
             return "", 0
 
-        # 尝试解析第一行为置信度
         lines = response.split("\n", 1)
         first_line = lines[0].strip()
 
-        if first_line == "0":
+        if first_line in ("0", "0。", "否", "无效", "无"):
             return "", 0
-        elif first_line == "1":
+        elif first_line in ("1", "1。", "是", "有效"):
             thought_content = lines[1].strip() if len(lines) > 1 else ""
             return thought_content, 1
-        elif response.startswith("0"):
+        elif response.startswith("0") and (len(response) == 1 or not response[1].isdigit()):
             return "", 0
-        elif response.startswith("1"):
-            # 处理 "1[内容]" 格式
+        elif response.startswith("1") and (len(response) == 1 or not response[1].isdigit()):
             rest = response[1:].strip()
             return rest, 1
 
-        # 无法解析时默认视为有效
+        if len(lines) > 1:
+            content = '\n'.join(lines[1:]).strip()
+            if content and len(content) >= 5:
+                return content, 1
+
         return response, 1
 
     def _rebuild_embeddings(self) -> None:
@@ -423,11 +411,8 @@ class ThoughtMemory:
         """
         before = self.stats()
         thought_count = self.store.clear_thoughts()
-        # 清除知识块
-        for kid in list(self.store._knowledge.keys()):
-            del self.store._knowledge[kid]
-        self.store._save_knowledge()
+        knowledge_count = self.store.clear_knowledge()
         self._cached_embeddings = None
         self._id_to_index = {}
         after = self.stats()
-        return {"before": before, "after": after, "cleared_thoughts": thought_count}
+        return {"before": before, "after": after, "cleared_thoughts": thought_count, "cleared_knowledge": knowledge_count}

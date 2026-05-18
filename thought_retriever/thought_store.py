@@ -285,10 +285,15 @@ class ThoughtStore:
         return False
 
     def clear_thoughts(self) -> int:
-        """清空所有思想，返回删除数量"""
         count = len(self._thoughts)
         self._thoughts.clear()
         self._save_thoughts()
+        return count
+
+    def clear_knowledge(self) -> int:
+        count = len(self._knowledge)
+        self._knowledge.clear()
+        self._save_knowledge()
         return count
 
     @property

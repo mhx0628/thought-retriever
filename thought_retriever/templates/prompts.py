@@ -8,22 +8,51 @@
     - 查询改写提示
 """
 
+import re
 
-def thought_confidence_prompt(query: str, answer: str) -> str:
-    """
-    思想与置信度生成提示模板
 
-    对应论文 Figure 3 的提示设计:
-        Step 1: 判断答案是否有效 (二值置信度)
-        Step 2: 若有效，将问答对提炼为可复用的知识点
+def _detect_language(text: str) -> str:
+    zh_chars = len(re.findall(r'[\u4e00-\u9fff]', text))
+    total_chars = len(text.replace(' ', '').replace('\n', ''))
+    if total_chars > 0 and zh_chars / total_chars > 0.15:
+        return "zh"
+    return "en"
 
-    Args:
-        query: 用户查询
-        answer: LLM生成的答案
 
-    Returns:
-        格式化的提示词字符串
-    """
+def thought_confidence_prompt_zh(query: str, answer: str) -> str:
+    return f"""给定问题：{query}
+给定答案：{answer}
+
+请根据提供的问题及其对应答案，执行以下步骤：
+
+步骤1：判断答案是否为实际回答，还是仅表示因信息不足无法回答。如果是后者，只输出'0'，不加任何多余文字；否则输出'1'。
+
+步骤2：如果是有效答案，请将问题和答案简洁地总结为一个连贯的知识点，形成一段流畅的文字。知识点应捕捉核心见解、推理逻辑或决策原则。
+
+输出格式（如果有效）：
+1
+[你总结的知识点]
+
+输出格式（如果无效）：
+0"""
+
+
+def answer_generation_prompt_zh(query: str, context: str) -> str:
+    return f"""请根据以下检索到的上下文回答问题。
+
+上下文：
+{context}
+
+问题：{query}
+
+请仅根据上下文中的信息提供清晰、简洁的回答。如果上下文信息不足以回答问题，请明确说明。"""
+
+
+def thought_confidence_prompt(query: str, answer: str, lang: str = "auto") -> str:
+    if lang == "auto":
+        lang = _detect_language(query + answer)
+    if lang == "zh":
+        return thought_confidence_prompt_zh(query, answer)
     return f"""Given question: {query}
 Given answer: {answer}
 
@@ -41,19 +70,11 @@ Output format (if invalid):
 0"""
 
 
-def answer_generation_prompt(query: str, context: str) -> str:
-    """
-    答案生成提示模板
-
-    将检索到的上下文与用户查询组合，引导LLM生成答案
-
-    Args:
-        query: 用户查询
-        context: 检索到的相关上下文（思想+知识块）
-
-    Returns:
-        格式化的提示词字符串
-    """
+def answer_generation_prompt(query: str, context: str, lang: str = "auto") -> str:
+    if lang == "auto":
+        lang = _detect_language(query)
+    if lang == "zh":
+        return answer_generation_prompt_zh(query, context)
     return f"""Based on the following retrieved context, please answer the question.
 
 Context:

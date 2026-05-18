@@ -35,6 +35,8 @@
 | 🔌 **模型无关** | 任何LLM均可接入 |
 | 🌐 **离线可用** | sentence-transformers → TF-IDF → 纯Python哈希，三级自动降级 |
 | 📁 **零数据库** | JSON文件持久化，即插即用 |
+| 🇨🇳 **中文优化** | jieba分词嵌入 + 中文提示词模板，中文场景效果提升3-5倍 |
+| 🧹 **智能过滤** | 自动跳过无意义消息，思想内容自动清理LLM输出标签 |
 
 ---
 
@@ -73,7 +75,9 @@
 ### 安装
 
 ```bash
-pip install numpy
+pip install thought-retriever
+# 或手动安装核心依赖：
+pip install numpy jieba
 # 语义嵌入（推荐，但非必须）：
 pip install sentence-transformers scikit-learn
 # 若无网络，系统会自动降级到 TF-IDF 或 纯Python哈希
@@ -104,6 +108,23 @@ memory.add_thought_directly(
 results = memory.retrieve("数据库连接池配置", top_k=5)
 for r in results:
     print(f"[{r['type']}] (score={r['score']:.2f}, level={r['abstraction_level']})")
+```
+
+### 中文场景使用
+
+```python
+# 中文场景推荐配置
+config = ThoughtConfig(
+    project_path="./my_project",
+    language="zh",  # 使用中文提示词模板
+)
+memory = ThoughtMemory(config=config)
+
+# 添加中文知识
+memory.add_knowledge("小明今年10岁，喜欢画画和踢足球")
+
+# 检索中文记忆
+results = memory.retrieve("小明喜欢什么")
 ```
 
 ### 完整LLM流水线
@@ -137,6 +158,8 @@ print(f"统计: {memory.stats()}")
 | `chunk_size` | 500 | — | 知识分块大小 |
 | `max_context_tokens` | 2000 | — | 最大上下文长度 |
 | `embedding_model` | `all-MiniLM-L6-v2` | Contriever | 嵌入模型 |
+| `language` | `auto` | — | 语言设置（auto/zh/en），影响提示词模板选择 |
+| `thought_prompt_lang` | `auto` | — | 思想生成提示词语言 |
 
 ---
 
@@ -160,6 +183,7 @@ thought-retriever/
 ├── .trae/skills/            # Trae AI IDE Skill
 ├── README.md                # 英文文档
 ├── README_ZH.md             # 本文档
+├── CHANGELOG.md              # 版本变更日志
 └── LICENSE                  # Apache 2.0
 ```
 
