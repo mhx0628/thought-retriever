@@ -12,16 +12,32 @@ license: apache-2.0
 
 **Don't Just Retrieve Raw Data — Retrieve Thoughts**
 
-A self-evolving long-term memory system for LLM-based agents.
+A self-evolving long-term memory system for LLM-based agents, based on the paper by **UIUC, MIT & CMU** (TMLR 2026).
 
-Based on the paper by **UIUC, MIT & CMU**, published in **TMLR 2026**.
+## v2.0.0 — Chinese Optimization
+
+- 🇨🇳 **Chinese Embedding Engine**: jieba tokenization + TF-IDF, 3-5x better for Chinese
+- 🇨🇳 **Chinese Prompt Templates**: Auto language detection
+- 🧹 **Smart Filtering**: Skip meaningless messages, clean LLM output labels
+- 🛡 **Robust Parsing**: Support Chinese "是/否/有效/无效"
 
 ## Quick Install
 
 ```bash
-pip install numpy sentence-transformers
+pip install numpy jieba
 git clone https://github.com/mhx0628/thought-retriever
-cd thought-retriever
+```
+
+## Quick Start
+
+```python
+from thought_retriever import ThoughtMemory, ThoughtConfig
+
+config = ThoughtConfig(project_path=".", language="zh")
+memory = ThoughtMemory(config=config)
+
+memory.add_knowledge("小明今年10岁，喜欢画画和踢足球")
+results = memory.retrieve("小明喜欢什么")
 ```
 
 ## Key Features
@@ -31,17 +47,11 @@ cd thought-retriever
 - 🎚 **Abstraction Hierarchy**: Shallow facts → deep insights
 - 🛡 **Dual Filters**: Anti-hallucination + anti-redundancy
 - 🔌 **Model-Agnostic**: Works with any LLM
-- 🌐 **Offline-First**: 3-tier fallback embedding engine
+- 🌐 **Offline-First**: 4-tier fallback embedding engine
 
-## 📖 Documentation
-
-- [English README](https://github.com/mhx0628/thought-retriever/blob/main/README.md)
-- [中文文档](https://github.com/mhx0628/thought-retriever/blob/main/README_ZH.md)
-- [Paper (arXiv:2604.12231)](https://arxiv.org/abs/2604.12231)
-
-## 🔗 Links
+## Links
 
 - GitHub: https://github.com/mhx0628/thought-retriever
-- Gitee: https://gitee.com/mhx/thought-retriever
+- Gitee: https://gitee.com/ma-hongxing-1/thought-retriever
 - Paper: https://arxiv.org/abs/2604.12231
-- OpenReview: https://openreview.net/forum?id=emCcuhtENL
+- CHANGELOG: https://github.com/mhx0628/thought-retriever/blob/main/CHANGELOG.md
